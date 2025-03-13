@@ -84,25 +84,25 @@ export default function AdminLayout({
         </div>
       </nav>
 
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
-        <div className="w-64 min-h-[calc(100vh-4rem)] border-r bg-muted/30">
-          <div className="p-4 space-y-2">
+        <div className="w-full md:w-64 border-b md:border-r bg-muted/30">
+          <div className="p-4 flex md:block overflow-x-auto items-center justify-center">
             <Link href="/admin">
               <Button variant="ghost" className="w-full justify-start">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
+                <LayoutDashboard className=" h-4 w-4" />
                 Dashboard
               </Button>
             </Link>
             <Link href="/admin/petitions">
               <Button variant="ghost" className="w-full justify-start">
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className=" h-4 w-4" />
                 Petitions
               </Button>
             </Link>
             <Link href="/admin/users">
               <Button variant="ghost" className="w-full justify-start">
-                <Users className="mr-2 h-4 w-4" />
+                <Users className=" h-4 w-4" />
                 Users
               </Button>
             </Link>

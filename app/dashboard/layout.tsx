@@ -79,23 +79,29 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-background">
       <nav className="border-b">
         <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
+          <div className="flex flex-col md:flex-row items-center justify-between py-4">
+            <Link href="/" className="flex items-center space-x-2 mb-4 md:mb-0">
               <MegaphoneIcon className="h-6 w-6 text-primary" />
               <span className="font-bold">DSEU Student Voice</span>
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
               <Link href="/petition/sign">
-                <Button variant="outline">Sign Petition</Button>
+                <Button variant="outline" className="w-full md:w-auto">
+                  Sign Petition
+                </Button>
               </Link>
-              <Button variant="ghost" onClick={handleSignOut}>
+              <Button
+                variant="ghost"
+                className="w-full md:w-auto"
+                onClick={handleSignOut}
+              >
                 Sign Out
               </Button>
             </div>
           </div>
         </div>
       </nav>
-      <main>{children}</main>
+      <main className="px-4 py-8 md:px-8">{children}</main>
     </div>
   );
 }

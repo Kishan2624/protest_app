@@ -139,17 +139,19 @@ export default function PetitionsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Petitions</h1>
-        <div className="flex items-center space-x-4">
+      <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+        <h1 className="text-3xl font-bold text-center md:text-left">
+          Petitions
+        </h1>
+        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
           <Input
             placeholder="Search petitions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
+            className="w-full md:w-64"
           />
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-full md:w-32">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
