@@ -27,13 +27,11 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const allowedFileTypes = ["image/jpeg", "image/png", "application/pdf"];
 
 const fileSchema = z
-  .union([
-    z.instanceof(File).refine((file) => allowedFileTypes.includes(file.type), {
-      message: "Only JPG, PNG, and PDF are allowed",
-    }),
-    z.undefined(), // This prevents validation errors when no file is uploaded
-  ])
-  .refine((file) => !file || file.size <= MAX_FILE_SIZE, {
+  .instanceof(File, { message: "File is required" })
+  .refine((file) => allowedFileTypes.includes(file.type), {
+    message: "Only JPG, PNG, and PDF are allowed",
+  })
+  .refine((file) => file.size <= MAX_FILE_SIZE, {
     message: "Max file size is 5MB",
   });
 

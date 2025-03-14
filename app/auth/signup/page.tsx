@@ -42,20 +42,31 @@ export default function SignupPage() {
   const onSubmit = async (data: SignupForm) => {
     try {
       setIsLoading(true);
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-      });
 
-      if (signUpError) throw signUpError;
+      // Step 1: Sign up user
+      const { data: signUpData, error: signUpError } =
+        await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+        });
 
-      // Get the user ID
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      if (signUpError) {
+        console.error("Sign-Up Error:", signUpError.message);
+        setIsLoading(false);
+        toast({ title: "Error", description: signUpError.message });
+        return;
+      }
 
-      // Create profile
+      // Step 2: Get the user (avoid calling getUser, use signUpData.user)
+      const user = signUpData.user;
+      if (!user) {
+        console.error("User not found after sign-up");
+        setIsLoading(false);
+        toast({ title: "Error", description: "User not authenticated" });
+        return;
+      }
+
+      // Step 3: Insert into profiles table
       const { error: profileError } = await supabase.from("profiles").insert([
         {
           full_name: data.fullName,
@@ -64,8 +75,14 @@ export default function SignupPage() {
         },
       ]);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile Insert Error:", profileError.message);
+        setIsLoading(false);
+        toast({ title: "Error", description: profileError.message });
+        return;
+      }
 
+      // Step 4: Success message and redirect
       toast({
         title: "Account created",
         description: "You can now sign in with your credentials",

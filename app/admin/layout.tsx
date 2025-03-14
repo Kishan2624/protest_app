@@ -86,7 +86,7 @@ export default function AdminLayout({
 
       <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
-        <div className="w-full md:w-64 border-b md:border-r bg-muted/30">
+        <div className="w-full md:h-screen md:w-64 border-b md:border-r bg-muted/30">
           <div className="p-4 flex md:block overflow-x-auto items-center justify-center">
             <Link href="/admin">
               <Button variant="ghost" className="w-full justify-start">
