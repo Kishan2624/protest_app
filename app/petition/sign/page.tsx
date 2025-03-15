@@ -22,14 +22,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase/client";
-import { Ole } from "next/font/google";
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const allowedFileTypes = ["image/jpeg", "image/png", "application/pdf"];
+const allowedFileTypes = ["image/jpeg", "image/png"];
 
 const fileSchema = z
   .instanceof(File, { message: "File is required" })
   .refine((file) => allowedFileTypes.includes(file.type), {
-    message: "Only JPG, PNG, and PDF are allowed",
+    message: "Only JPG, JPEG, PNG, are allowed",
   })
   .refine((file) => file.size <= MAX_FILE_SIZE, {
     message: "Max file size is 5MB",

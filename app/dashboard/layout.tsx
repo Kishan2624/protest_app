@@ -1,76 +1,110 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { MegaphoneIcon } from "lucide-react"
-import Link from "next/link"
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { MegaphoneIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    checkUser()
-  }, [])
+    checkUser();
+  }, []);
 
   const checkUser = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        router.push("/auth/login")
-        return
+        router.push("/auth/login");
+        return;
       }
 
       // Check if user is admin
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('user_id', user.id)
-        .single()
+        .from("profiles")
+        .select("is_admin")
+        .eq("user_id", user.id)
+        .single();
 
-      setIsAdmin(!!profile?.is_admin)
+      setIsAdmin(!!profile?.is_admin);
     } catch (error) {
-      console.error("Error checking user:", error)
-      router.push("/auth/login")
+      console.error("Error checking user:", error);
+      router.push("/auth/login");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
-      router.push("/")
+      await supabase.auth.signOut();
+      // Remove authentication cookies
+      document.cookie =
+        "sb-access-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie =
+        "sb-refresh-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+      router.push("/");
     } catch (error) {
-      console.error("Error signing out:", error)
+      console.error("Error signing out:", error);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b">
+      <nav className="border-b hidden md:block">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <Link href="/" className="flex items-center space-x-2">
               <MegaphoneIcon className="h-6 w-6 text-primary" />
               <span className="font-bold">DSEU Student Voice</span>
             </Link>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-center space-x-4">
+              {isAdmin && (
+                <Link href="/admin">
+                  <Button variant="outline">Admin Dashboard</Button>
+                </Link>
+              )}
+              <Link href="/petition/sign">
+                <Button variant="outline">Sign Petition</Button>
+              </Link>
+              <Button variant="ghost" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <nav className="border-b md:hidden">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col items-start space-y-2">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 text-center w-full justify-center"
+            >
+              <MegaphoneIcon className="h-6 w-6 text-primary" />
+              <span className="font-bold">DSEU Student Voice</span>
+            </Link>
+            <div className="flex flex-row flex-wrap gap-4 items-start justify-center">
               {isAdmin && (
                 <Link href="/admin">
                   <Button variant="outline">Admin Dashboard</Button>
@@ -88,5 +122,5 @@ export default function DashboardLayout({
       </nav>
       <main>{children}</main>
     </div>
-  )
+  );
 }

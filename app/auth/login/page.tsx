@@ -67,7 +67,7 @@ export default function LoginPage() {
       });
 
       console.log("Login successful, redirecting to /dashboard");
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (error: any) {
       console.error("Login failed:", error);
       toast({
