@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -22,6 +28,8 @@ import {
 import { supabase } from "@/lib/supabase/client";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { generatePetitionPDF } from "@/lib/pdf";
+import { Eye, Download } from "lucide-react";
 
 interface Petition {
   id: string;
@@ -30,6 +38,12 @@ interface Petition {
   email: string;
   status: string;
   created_at: string;
+  profile_url: string;
+  aadhar_url: string;
+  signature_url: string;
+  problem_description: string;
+  phone_number: string;
+  roll_number: string;
 }
 
 export default function PetitionsPage() {
@@ -37,6 +51,9 @@ export default function PetitionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedPetition, setSelectedPetition] = useState<Petition | null>(
+    null
+  );
   const { toast } = useToast();
 
   useEffect(() => {
@@ -113,6 +130,37 @@ export default function PetitionsPage() {
         variant: "destructive",
         title: "Error",
         description: "Failed to update petition status",
+      });
+    }
+  };
+
+  const handleDownloadPDF = async (petition: Petition) => {
+    try {
+      const pdf = await generatePetitionPDF({
+        fullName: petition.full_name,
+        collegeName: petition.college_name,
+        rollNumber: petition.roll_number,
+        email: petition.email,
+        phoneNumber: petition.phone_number,
+        problemDescription: petition.problem_description,
+        profileUrl: petition.profile_url,
+        signatureUrl: petition.signature_url,
+        aadharUrl: petition.aadhar_url,
+        createdAt: petition.created_at,
+      });
+
+      pdf.save(`petition-${petition.id}.pdf`);
+
+      toast({
+        title: "PDF Generated",
+        description: "Petition PDF has been downloaded",
+      });
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to generate PDF",
       });
     }
   };
@@ -202,6 +250,20 @@ export default function PetitionsPage() {
                   <div className="flex items-center space-x-2">
                     <Button
                       size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedPetition(petition)}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDownloadPDF(petition)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
                       variant={
                         petition.status === "verified" ? "outline" : "default"
                       }
@@ -231,6 +293,91 @@ export default function PetitionsPage() {
           </TableBody>
         </Table>
       </Card>
+      {/* Petition Details Dialog */}
+      <Dialog
+        open={!!selectedPetition}
+        onOpenChange={() => setSelectedPetition(null)}
+      >
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Petition Details</DialogTitle>
+          </DialogHeader>
+          {selectedPetition && (
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div>
+                {/* Smaller Profile Image */}
+                <img
+                  src={selectedPetition.profile_url}
+                  alt="Profile"
+                  className="w-32 h-32 object-contain mb-4"
+                />
+                <div className="space-y-2">
+                  <p>
+                    <strong>Name:</strong> {selectedPetition.full_name}
+                  </p>
+                  <p>
+                    <strong>College:</strong> {selectedPetition.college_name}
+                  </p>
+                  <p>
+                    <strong>Roll Number:</strong> {selectedPetition.roll_number}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {selectedPetition.email}
+                  </p>
+                  <p>
+                    <strong>Phone:</strong> {selectedPetition.phone_number}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-4">
+                {/* Problem Description */}
+                <div>
+                  <h4 className="font-semibold mb-2">Problem Description</h4>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedPetition.problem_description}
+                  </p>
+                </div>
+
+                {/* Wider Signature Image */}
+                <div>
+                  <h4 className="font-semibold mb-2">Signature</h4>
+                  <img
+                    src={selectedPetition.signature_url}
+                    alt="Signature"
+                    className="w-32 h-20 object-contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Aadhar Card Below the Content */}
+          {selectedPetition?.aadhar_url && (
+            <div className="mt-6">
+              <h4 className="font-semibold mb-2">Identity Document</h4>
+              {selectedPetition.aadhar_url.endsWith(".pdf") ? (
+                <a
+                  href={selectedPetition.aadhar_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  View Aadhar Card (PDF)
+                </a>
+              ) : (
+                <img
+                  src={selectedPetition.aadhar_url}
+                  alt="Aadhar Card"
+                  className=" object-contain"
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

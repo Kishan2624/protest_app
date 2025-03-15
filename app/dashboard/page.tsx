@@ -136,13 +136,55 @@ export default function DashboardPage() {
 
   const handleDownloadPDF = async () => {
     try {
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You must be logged in to download your petition",
+        });
+        return;
+      }
+
+      // Fetch user's petition
+      const { data: petitions, error } = await supabase
+        .from("petitions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!petitions || petitions.length === 0) {
+        toast({
+          variant: "destructive",
+          title: "No Petition Found",
+          description:
+            "You haven't signed any petition yet. Please sign a petition first.",
+        });
+        return;
+      }
+
+      const petition = petitions[0];
+      console.log(petition);
       const pdf = await generatePetitionPDF({
-        totalSignatures: stats.totalSignatures,
-        verifiedSignatures: stats.verifiedSignatures,
-        collegeCount: stats.collegeBreakdown.length,
+        fullName: petition.full_name,
+        collegeName: petition.college_name,
+        rollNumber: petition.roll_number,
+        email: petition.email,
+        phoneNumber: petition.phone_number,
+        problemDescription: petition.problem_description,
+        profileUrl: petition.profile_url,
+        signatureUrl: petition.signature_url,
+        aadharUrl: petition.aadhar_url,
+        createdAt: petition.created_at,
       });
 
-      pdf.save("dseu-petition.pdf");
+      pdf.save(`petition-${petition.id}.pdf`);
 
       toast({
         title: "PDF Generated",
@@ -153,7 +195,7 @@ export default function DashboardPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to generate PDF",
+        description: "Failed to generate PDF. Please try again later.",
       });
     }
   };
@@ -177,7 +219,7 @@ export default function DashboardPage() {
           <SharePetition stats={stats} />
           <Button onClick={handleDownloadPDF} variant="outline">
             <Download className="mr-2 h-4 w-4" />
-            Download PDF
+            Download My Petition
           </Button>
         </div>
       </div>
